@@ -1,6 +1,6 @@
 # Docker Registry Tool
 
-Small bash script to do repitive things with docker registry > 2.1 ( I think, whichever version supports delete by manifest)
+Small bash script to do repetitive things with docker registry > 2.1 ( I think, whichever version supports delete by manifest)
 
 
 ## Dependencies
