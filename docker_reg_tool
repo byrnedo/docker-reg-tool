@@ -48,7 +48,13 @@ shift
 ACTION="$1"
 shift
 
-CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < ~/.docker/config.json)"
+CREDS=""
+if [[ -f "~/.docker/config.json" ]]; then
+    CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < ~/.docker/config.json)"
+elif [[ -v "BASIC_AUTH" ]]; then
+    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
+fi
+
 
 case "$ACTION" in
     list)
