@@ -21,19 +21,29 @@ function usage {
     Example:
 
     List all repos
-        /$ $CMD https://registry.my.domain list
+        /$ $CMD [-v] https://registry.my.domain list
 
     List tags for one repo
-        /$ $CMD https://registry.my.domain list some-repo
+        /$ $CMD [-v] https://registry.my.domain list some-repo
 
     Delete tag for a repo
-        /$ $CMD https://registry.my.domain delete some-repo
+        /$ $CMD https://registry.my.domain delete some-repo tag
 
 
 EOU
     exit 1
 }
 
+verbose_pattern=' -v '
+export VERBOSE=0
+if [[ " $* " =~ $verbose_pattern ]]; then
+    if [[ " $1 " != " -v " || "$3" == delete ]]; then
+        usage
+    else
+        export VERBOSE=1
+        shift
+    fi
+fi
 [ $# -lt 2 ] && usage
 
 set +e
@@ -49,22 +59,34 @@ ACTION="$1"
 shift
 
 CREDS=""
-if [[ -f "~/.docker/config.json" ]]; then
+if [[ -f ~/.docker/config.json ]]; then
     CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < ~/.docker/config.json)"
 elif [[ -v "BASIC_AUTH" ]]; then
     CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
 
 
+verbose() {
+    if ((VERBOSE));then
+        cat >&2
+    else
+        : nop
+    fi
+}; export -f verbose
+
 case "$ACTION" in
     list)
         if [ $# -eq 1 ]; then
             repo=${1}
             if [ -n "$repo" ]; then
-                curl -s --header "$CREDS" $PROTO$REG/v2/$repo/tags/list | jq -r '.tags|.[]'
+                curl -v --header "$CREDS" $PROTO$REG/v2/$repo/tags/list \
+                        2> >(verbose) \
+                    | jq -r '.tags|.[]'
             fi
         else
-            curl -s --header "$CREDS" $PROTO$REG/v2/_catalog | jq -r '.repositories|.[]'
+            curl -v --header "$CREDS" $PROTO$REG/v2/_catalog \
+                    2> >(verbose) \
+                | jq -r '.repositories|.[]'
         fi
 
         ;;
