@@ -23,10 +23,10 @@ Usage:
     Example:
 
     List all repos
-        /$ ./docker_reg_tool https://registry.my.domain list
+        /$ ./docker_reg_tool [-v] https://registry.my.domain list
 
     List tags for one repo
-        /$ ./docker_reg_tool https://registry.my.domain list some-repo
+        /$ ./docker_reg_tool [-v] https://registry.my.domain list some-repo
 
     Delete tag for a repo
         /$ ./docker_reg_tool https://registry.my.domain delete some-repo
