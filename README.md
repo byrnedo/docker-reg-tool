@@ -29,7 +29,7 @@ Usage:
         /$ ./docker_reg_tool https://registry.my.domain list some-repo
 
     Delete tag for a repo
-        /$ ./docker_reg_tool https://registry.my.domain delete some-repo
+        /$ ./docker_reg_tool https://registry.my.domain delete some-repo some-tag
 
 ```
 
