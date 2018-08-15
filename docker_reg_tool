@@ -27,7 +27,7 @@ function usage {
         /$ $CMD https://registry.my.domain list some-repo
 
     Delete tag for a repo
-        /$ $CMD https://registry.my.domain delete some-repo
+        /$ $CMD https://registry.my.domain delete some-repo some-tag
 
 
 EOU
@@ -49,8 +49,10 @@ ACTION="$1"
 shift
 
 CREDS=""
-if [[ -f "~/.docker/config.json" ]]; then
-    CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < ~/.docker/config.json)"
+DOCKER_CONFIG="$HOME/.docker/config.json"
+
+if [[ -f "$DOCKER_CONFIG" ]]; then
+    CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < "$DOCKER_CONFIG")"
 elif [[ -v "BASIC_AUTH" ]]; then
     CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
