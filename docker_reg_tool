@@ -3,6 +3,20 @@ set -euo pipefail
 
 CMD=$0
 
+function isTruthy {
+    local arg=$1
+
+    if [[ "$arg" = true ]] || [[ "$arg" = "true" ]] || [[ "$arg" -eq 1 ]]; then
+        echo "true"
+    fi
+
+}
+
+if [[ -v "TRACE" ]] && [[ $(isTruthy "$TRACE") ]]; then
+    set -x
+fi
+
+
 function usage {
     cat <<EOU
 
@@ -34,6 +48,8 @@ EOU
     exit 1
 }
 
+
+
 [ $# -lt 2 ] && usage
 
 set +e
@@ -57,26 +73,38 @@ elif [[ -v "BASIC_AUTH" ]]; then
     CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
 
+SEC_FLAG=""
+
+if [[ -v "INSECURE_REGISTRY" ]] && [[ $(isTruthy "$INSECURE_REGISTRY") ]]; then
+    SEC_FLAG="-k"
+fi
+
+function curlCmd {
+    curl "$SEC_FLAG" --header "$CREDS" $*
+}
+
+
 
 case "$ACTION" in
     list)
         if [ $# -eq 1 ]; then
             repo=${1}
             if [ -n "$repo" ]; then
-                curl -s --header "$CREDS" $PROTO$REG/v2/$repo/tags/list | jq -r '.tags|.[]'
+                curlCmd -s $PROTO$REG/v2/$repo/tags/list | jq -r '.tags|.[]'
             fi
         else
-            curl -s --header "$CREDS" $PROTO$REG/v2/_catalog | jq -r '.repositories|.[]'
+            curlCmd -s $PROTO$REG/v2/_catalog | jq -r '.repositories|.[]'
         fi
 
         ;;
     delete)
         repo=$1
         tag=$2
-        digest=$(curl -v -s --header "$CREDS" -H "Accept:application/vnd.docker.distribution.manifest.v2+json" $PROTO$REG/v2/$repo/manifests/$tag 2>&1 |grep "< Docker-Content-Digest:"|awk '{print $3}')
+        response=$(curlCmd -v -s -H "Accept:application/vnd.docker.distribution.manifest.v2+json" "$PROTO$REG/v2/$repo/manifests/$tag" 2>&1)
+        digest=$(echo $response | grep -i "< Docker-Content-Digest:"|awk '{print $3}')
         digest=${digest//[$'\t\r\n']}
         echo "DIGEST: $digest"
-        result=$(curl --header "$CREDS"  -s -o /dev/null -w "%{http_code}" -H "Accept:application/vnd.docker.distribution.manifest.v2+json" -X DELETE "$PROTO$REG/v2/$repo/manifests/$digest")
+        result=$(curlCmd -s -o /dev/null -w "%{http_code}" -H "Accept:application/vnd.docker.distribution.manifest.v2+json" -X DELETE "$PROTO$REG/v2/$repo/manifests/$digest")
         if [ $result -eq 202 ]; then
             echo "Successfully deleted"
             exit 0
@@ -86,5 +114,4 @@ case "$ACTION" in
         fi
         ;;
 esac
-
 

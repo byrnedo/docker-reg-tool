@@ -37,4 +37,23 @@ Usage:
 
 ...are sniffed out of ~/.docker/config.json. So you need to do `docker login...` before you can use this tool.
 
+They can also be set with the `BASIC_AUTH` environment variable.
+    
+    BASIC_AUTH=user:pass ./docker_reg_tool ...
+
 Only been tested on Basic auth.
+
+## Insecure Registry
+
+Set the `INSECURE_REGISTRY` to true;
+
+    INSECURE_REGISTRY=true ./docker_reg_tool ...
+
+## Debugging
+
+Set the `TRACE` environment variable to true to turn on `set -x`
+
+    TRACE=true ./docker_reg_tool ...
+
+
+
