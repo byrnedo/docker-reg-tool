@@ -55,5 +55,9 @@ Set the `TRACE` environment variable to true to turn on `set -x`
 
     TRACE=true ./docker_reg_tool ...
 
+## Docker Image
+
+See https://hub.docker.com/r/byrnedo/reg-tool/
+
 
 
