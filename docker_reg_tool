@@ -90,10 +90,10 @@ case "$ACTION" in
         if [ $# -eq 1 ]; then
             repo=${1}
             if [ -n "$repo" ]; then
-                curlCmd -s $PROTO$REG/v2/$repo/tags/list | jq -r '.tags|.[]'
+                curlCmd -s "$PROTO$REG/v2/$repo/tags/list" | jq -r '.tags|.[]'
             fi
         else
-            curlCmd -s $PROTO$REG/v2/_catalog | jq -r '.repositories|.[]'
+            curlCmd -s "$PROTO$REG/v2/_catalog" | jq -r '.repositories|.[]'
         fi
 
         ;;
