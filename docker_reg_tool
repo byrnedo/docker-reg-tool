@@ -101,7 +101,7 @@ case "$ACTION" in
         repo=$1
         tag=$2
         response=$(curlCmd -v -s -H "Accept:application/vnd.docker.distribution.manifest.v2+json" "$PROTO$REG/v2/$repo/manifests/$tag" 2>&1)
-        digest=$(echo $response | grep -i "< Docker-Content-Digest:"|awk '{print $3}')
+        digest=$(echo "$response" | grep -i "< Docker-Content-Digest:"|awk '{print $3}')
         digest=${digest//[$'\t\r\n']}
         echo "DIGEST: $digest"
         result=$(curlCmd -s -o /dev/null -w "%{http_code}" -H "Accept:application/vnd.docker.distribution.manifest.v2+json" -X DELETE "$PROTO$REG/v2/$repo/manifests/$digest")
