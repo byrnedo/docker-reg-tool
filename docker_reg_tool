@@ -68,7 +68,15 @@ CREDS=""
 DOCKER_CONFIG="$HOME/.docker/config.json"
 
 if [[ -f "$DOCKER_CONFIG" ]]; then
-    CREDS="Authorization: Basic $(jq -r '.auths."'$REG'".auth' < "$DOCKER_CONFIG")"
+    AUTH_INFO=$(jq -r '.auths."'$REG'".auth' < "$DOCKER_CONFIG")
+    if [ "$AUTH_INFO" = "null" ]; then
+        AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
+        if [ "$AUTH_INFO" = "null" ]; then
+            echo "ERROR: Failed to retrieve credentials from $DOCKER_CONFIG for ${REG}!"
+            exit 4
+        fi
+    fi
+    CREDS="Authorization: Basic $AUTH_INFO"
 elif [[ -v "BASIC_AUTH" ]]; then
     CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
