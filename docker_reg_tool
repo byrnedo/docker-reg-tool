@@ -101,7 +101,7 @@ case "$ACTION" in
                 curlCmd -s "$PROTO$REG/v2/$repo/tags/list" | jq -r '.tags|.[]'
             fi
         else
-            curlCmd -s "$PROTO$REG/v2/_catalog" | jq -r '.repositories|.[]'
+            curlCmd -s "$PROTO$REG/v2/_catalog?n=500" | jq -r '.repositories|.[]'
         fi
 
         ;;
