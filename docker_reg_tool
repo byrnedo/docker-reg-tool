@@ -68,7 +68,7 @@ CREDS=""
 DOCKER_CONFIG="$HOME/.docker/config.json"
 
 if [[ -f "$DOCKER_CONFIG" ]]; then
-    AUTH_INFO=$(jq -r '.auths."'$REG'".auth' < "$DOCKER_CONFIG")
+    AUTH_INFO=$(jq -r '.auths["'$REG'"].auth' < "$DOCKER_CONFIG")
     if [ "$AUTH_INFO" = "null" ]; then
         AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
         if [ "$AUTH_INFO" = "null" ]; then
