@@ -13,9 +13,6 @@ install:
   - docker pull hello-world
   - docker tag hello-world localhost:5000/hello-world
   - docker push localhost:5000/hello-world
-  # install Bats
-  - git clone https://github.com/sstephenson/bats.git
-  - bats/install.sh /usr/local
 
 script:
   - bats test/hello-world.bats
