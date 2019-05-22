@@ -5,6 +5,10 @@ services:
 
 before_install:
   - docker run --rm -d -p 5000:5000 -v "$(pwd)"/test:/auth -e "REGISTRY_AUTH=htpasswd" -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd registry:2
+  - echo "testpassword" | docker login http://localhost:5000 --username testuser --password-stdin
+  - docker pull hello-world
+  - docker tag hello-world localhost:5000/hello-world
+  - docker push localhost:5000/hello-world
 
 script:
   - BASIC_AUTH=testuser:testpassword ./docker_reg_tool http://localhost:5000 list
