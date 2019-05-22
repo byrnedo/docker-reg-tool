@@ -67,7 +67,9 @@ shift
 CREDS=""
 DOCKER_CONFIG="$HOME/.docker/config.json"
 
-if [[ -f "$DOCKER_CONFIG" ]]; then
+if [[ -v "BASIC_AUTH" ]]; then
+    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
+elif [[ -f "$DOCKER_CONFIG" ]]; then
     AUTH_INFO=$(jq -r '.auths["'$REG'"].auth' < "$DOCKER_CONFIG")
     if [ "$AUTH_INFO" = "null" ]; then
         AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
@@ -77,8 +79,6 @@ if [[ -f "$DOCKER_CONFIG" ]]; then
         fi
     fi
     CREDS="Authorization: Basic $AUTH_INFO"
-elif [[ -v "BASIC_AUTH" ]]; then
-    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
 
 SEC_FLAG=""
