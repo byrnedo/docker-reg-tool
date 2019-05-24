@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 CMD=$0
 
@@ -12,7 +12,7 @@ function isTruthy {
 
 }
 
-if [[ -v "TRACE" ]] && [[ $(isTruthy "$TRACE") ]]; then
+if [[ ${TRACE} ]] && [[ $(isTruthy "$TRACE") ]]; then
     set -x
 fi
 
@@ -20,10 +20,10 @@ fi
 function usage {
     cat <<EOU
 
-    Usage: 
+    Usage:
 
     $CMD REGISTRY_BASE_URL ACTION [OPTIONS..]
-    
+
     Actions:
 
     - list               list repos
@@ -67,7 +67,9 @@ shift
 CREDS=""
 DOCKER_CONFIG="$HOME/.docker/config.json"
 
-if [[ -f "$DOCKER_CONFIG" ]]; then
+if [[ ${BASIC_AUTH} ]]; then
+    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
+elif [[ -f "$DOCKER_CONFIG" ]]; then
     AUTH_INFO=$(jq -r '.auths["'$REG'"].auth' < "$DOCKER_CONFIG")
     if [ "$AUTH_INFO" = "null" ]; then
         AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
@@ -77,13 +79,11 @@ if [[ -f "$DOCKER_CONFIG" ]]; then
         fi
     fi
     CREDS="Authorization: Basic $AUTH_INFO"
-elif [[ -v "BASIC_AUTH" ]]; then
-    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
 fi
 
 SEC_FLAG=""
 
-if [[ -v "INSECURE_REGISTRY" ]] && [[ $(isTruthy "$INSECURE_REGISTRY") ]]; then
+if [[ ${INSECURE_REGISTRY} ]] && [[ $(isTruthy "$INSECURE_REGISTRY") ]]; then
     SEC_FLAG="-k"
 fi
 
@@ -116,10 +116,9 @@ case "$ACTION" in
         if [ $result -eq 202 ]; then
             echo "Successfully deleted"
             exit 0
-        else 
+        else
             echo "Failed to delete"
             exit 3
         fi
         ;;
 esac
-
