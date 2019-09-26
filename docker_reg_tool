@@ -113,11 +113,11 @@ case "$ACTION" in
         digest=${digest//[$'\t\r\n']}
         echo "DIGEST: $digest"
         result=$(curlCmd -s -o /dev/null -w "%{http_code}" -H "Accept:application/vnd.docker.distribution.manifest.v2+json" -X DELETE "$PROTO$REG/v2/$repo/manifests/$digest")
-        if [ $result -eq 202 ]; then
+        if [ "$result" -eq 202 ]; then
             echo "Successfully deleted"
             exit 0
         else
-            echo "Failed to delete"
+            echo "Failed to delete: $result"
             exit 3
         fi
         ;;
