@@ -48,6 +48,26 @@ Only been tested on Basic auth.
 Set the `INSECURE_REGISTRY` to true;
 
     INSECURE_REGISTRY=true ./docker_reg_tool ...
+    
+## Registry Settings
+
+In order for this to work, the registry needs to be running with
+If docker image:
+```  
+REGISTRY_STORAGE_DELETE_ENABLED="true"
+```
+Or in the config file:
+```
+storage:
+  delete:
+    enabled: true
+```
+
+Also, the size will not decrease until the garbage collector runs. 
+You can trigger it manually with:
+```
+docker exec registry bin/registry garbage-collect -m=true /etc/docker/registry/config.yml
+```
 
 ## Debugging
 
@@ -58,6 +78,7 @@ Set the `TRACE` environment variable to true to turn on `set -x`
 ## Docker Image
 
 See https://hub.docker.com/r/byrnedo/reg-tool/
+
 
 
 
