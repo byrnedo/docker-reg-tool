@@ -3,6 +3,24 @@ set -eo pipefail
 
 CMD=$0
 
+function try()
+{
+    [[ $- = *e* ]]; SAVED_OPT_E=$?
+    set +e
+}
+
+function throw()
+{
+    exit $1
+}
+
+function catch()
+{
+    export exception_code=$?
+    (( $SAVED_OPT_E )) && set +e
+    return $exception_code
+}
+
 function isTruthy {
     local arg=$1
 
@@ -35,14 +53,19 @@ function usage {
     Example:
 
     List all repos
-        /$ $CMD https://registry.my.domain list
+        /$ $CMD https://registry:port list
 
     List tags for one repo
-        /$ $CMD https://registry.my.domain list some-repo
+        /$ $CMD https://registry:port list some-repo
 
     Delete tag for a repo
-        /$ $CMD https://registry.my.domain delete some-repo some-tag
+        /$ $CMD https://registry:port delete some-repo some-tag
 
+    Using with insecure registry:
+        INSECURE_REGISTRY=true $CMD ...
+
+    Basic authentication:
+        BASIC_AUTH=user:pass $CMD ...
 
 EOU
     exit 1
@@ -67,18 +90,20 @@ shift
 CREDS=""
 DOCKER_CONFIG="$HOME/.docker/config.json"
 
-if [[ ${BASIC_AUTH} ]]; then
-    CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
-elif [[ -f "$DOCKER_CONFIG" ]]; then
-    AUTH_INFO=$(jq -r '.auths["'$REG'"].auth' < "$DOCKER_CONFIG")
-    if [ "$AUTH_INFO" = "null" ]; then
-        AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
-        if [ "$AUTH_INFO" = "null" ]; then
-            echo "ERROR: Failed to retrieve credentials from $DOCKER_CONFIG for ${REG}!"
-            exit 4
-        fi
-    fi
-    CREDS="Authorization: Basic $AUTH_INFO"
+if ! [[ ${INSECURE_REGISTRY} ]] && [[ $(isTruthy "$INSECURE_REGISTRY") ]]; then
+  if [[ ${BASIC_AUTH} ]]; then
+      CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
+  elif [[ -f "$DOCKER_CONFIG" ]]; then
+      AUTH_INFO=$(jq -r '.auths["'$REG'"].auth' < "$DOCKER_CONFIG")
+      if [ "$AUTH_INFO" = "null" ]; then
+          AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
+          if [ "$AUTH_INFO" = "null" ]; then
+              echo "ERROR: Failed to retrieve credentials from $DOCKER_CONFIG for ${REG}!"
+              exit 4
+          fi
+      fi
+      CREDS="Authorization: Basic $AUTH_INFO"
+  fi
 fi
 
 SEC_FLAG=""
@@ -98,7 +123,13 @@ case "$ACTION" in
         if [ $# -eq 1 ]; then
             repo=${1}
             if [ -n "$repo" ]; then
-                curlCmd -s "$PROTO$REG/v2/$repo/tags/list" | jq -r '.tags|.[]'
+                try
+                (
+                  curlCmd -s "$PROTO$REG/v2/$repo/tags/list" | jq -r '.tags|.[]'
+                )
+                catch || {
+                  echo "Failed to list $repo repository tags. Probably all tags was deleted."
+                }
             fi
         else
             curlCmd -s "$PROTO$REG/v2/_catalog?n=500" | jq -r '.repositories|.[]'
