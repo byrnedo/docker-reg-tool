@@ -30,6 +30,12 @@ Usage:
 
     Delete tag for a repo
         /$ ./docker_reg_tool https://registry.my.domain delete some-repo some-tag
+        
+    Using with insecure registry:
+        INSECURE_REGISTRY=true $CMD ...
+
+    Basic authentication:
+        BASIC_AUTH=user:pass $CMD ...
 
 ```
 
