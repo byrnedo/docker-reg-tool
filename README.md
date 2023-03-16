@@ -20,6 +20,8 @@ Usage:
 
     - delete REPO TAG    delete tag for repo
 
+    - getdate REPO TAG   get last create or modification timestamp
+
     Example:
 
     List all repos
@@ -30,6 +32,9 @@ Usage:
 
     Delete tag for a repo
         /$ ./docker_reg_tool https://registry.my.domain delete some-repo some-tag
+
+    Get last create or modification timestamp for repo tag
+        /$ ./docker_reg_tool https://registry.my.domain getdate some-repo some-tag
 
 ```
 
