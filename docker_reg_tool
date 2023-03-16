@@ -32,6 +32,8 @@ function usage {
 
     - delete REPO TAG    delete tag for repo
 
+    - getdate REPO TAG   get last create or modification timestamp
+
     Example:
 
     List all repos
@@ -42,6 +44,9 @@ function usage {
 
     Delete tag for a repo
         /$ $CMD https://registry.my.domain delete some-repo some-tag
+
+    Get last create or modification timestamp for repo tag
+        /$ $CMD https://registry.my.domain getdate some-repo some-tag
 
 
 EOU
@@ -123,5 +128,10 @@ case "$ACTION" in
             echo "Failed to delete: $result"
             exit 3
         fi
+        ;;
+    getdate)
+        repo=$1
+        tag=$2
+        curlCmd -s "$PROTO$REG/v2/$repo/manifests/$tag" | jq -r '.history[].v1Compatibility' | jq -sr '[.[].created] | sort[-1]'
         ;;
 esac
