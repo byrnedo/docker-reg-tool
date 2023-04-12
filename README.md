@@ -2,7 +2,6 @@
 
 Small bash script to do repetitive things with docker registry > 2.1 ( I think, whichever version supports delete by manifest)
 
-
 ## Dependencies
 
 [Jq](https://stedolan.github.io/jq/)
@@ -32,6 +31,8 @@ Usage:
         /$ ./docker_reg_tool https://registry.my.domain delete some-repo some-tag
 
 ```
+
+If you want something more fully featured then check out [crane](https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md).
 
 ## Credentials
 
