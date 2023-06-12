@@ -67,7 +67,7 @@ storage:
 Also, the size will not decrease until the garbage collector runs. 
 You can trigger it manually with:
 ```
-docker exec registry bin/registry garbage-collect -m=true /etc/docker/registry/config.yml
+docker exec registry /bin/registry garbage-collect -m=true /etc/docker/registry/config.yml
 ```
 
 ## Debugging
