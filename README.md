@@ -7,10 +7,10 @@ Small bash script to do repetitive things with docker registry > 2.1 ( I think, 
 [Jq](https://stedolan.github.io/jq/)
 
 ```
-Usage: 
+Usage:
 
     ./docker_reg_tool REGISTRY_BASE_URL ACTION [OPTIONS..]
-    
+
     Actions:
 
     - list               list repos
@@ -34,12 +34,18 @@ Usage:
 
 If you want something more fully featured then check out [crane](https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md).
 
+## Docker config file location
+
+If your config.json location is not ~/.docker/config.json, you can define the location with the DOCKER_CONFIG environment variable.
+
+    DOCKER_CONFIG="/your/path/to/docker/config.json" ./docker_reg_tool ...
+
 ## Credentials
 
 ...are sniffed out of ~/.docker/config.json. So you need to do `docker login...` before you can use this tool.
 
 They can also be set with the `BASIC_AUTH` environment variable.
-    
+
     BASIC_AUTH=user:pass ./docker_reg_tool ...
 
 Only been tested on Basic auth.
@@ -49,12 +55,12 @@ Only been tested on Basic auth.
 Set the `INSECURE_REGISTRY` to true;
 
     INSECURE_REGISTRY=true ./docker_reg_tool ...
-    
+
 ## Registry Settings
 
 In order for this to work, the registry needs to be running with
 If docker image:
-```  
+```
 REGISTRY_STORAGE_DELETE_ENABLED="true"
 ```
 Or in the config file:
@@ -64,7 +70,7 @@ storage:
     enabled: true
 ```
 
-Also, the size will not decrease until the garbage collector runs. 
+Also, the size will not decrease until the garbage collector runs.
 You can trigger it manually with:
 ```
 docker exec registry /bin/registry garbage-collect -m=true /etc/docker/registry/config.yml

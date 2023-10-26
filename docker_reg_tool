@@ -65,7 +65,7 @@ ACTION="$1"
 shift
 
 CREDS=""
-DOCKER_CONFIG="$HOME/.docker/config.json"
+DOCKER_CONFIG="${DOCKER_CONFIG:-$HOME/.docker/config.json}"
 
 if [[ ${BASIC_AUTH} ]]; then
     CREDS="Authorization: Basic $(echo -n $BASIC_AUTH|base64)"
