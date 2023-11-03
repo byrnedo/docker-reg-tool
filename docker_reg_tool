@@ -1,6 +1,14 @@
 #!/bin/bash
 set -eo pipefail
 
+# default FQDN registry name (e.g., https://registry.example.com)
+DEF_FULL_REG=""
+
+# colors
+INFO='\e[34m'
+ERROR='\e[31m'
+RESET='\e[0m'
+
 CMD=$0
 
 function isTruthy {
@@ -49,18 +57,34 @@ EOU
 }
 
 
-
-[ $# -lt 2 ] && usage
+[ $# -lt 1 ] && usage
 
 set +e
-PROTO="$(echo $1 | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+
+# check if the command includes registry FQDN as the first param
+if [[ $1 == http* ]]
+then
+   FULL_REG=$1
+   shift
+else
+   FULL_REG=$DEF_FULL_REG
+fi
+
+[ -z "$FULL_REG" ] && >&2 echo -e "${ERROR}ERROR: You must provide registry url as arg or default (No one is present)${RESET}" && usage
+
+# inform user about the registry being used
+echo -e "(${INFO}Registry: ${FULL_REG}${RESET})"
+echo
+
+PROTO="$(echo $FULL_REG | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+
 set -e
 
-[ -z "$PROTO" ] && >&2 echo "ERROR: Must have protocol in registry url" && usage
+[ -z "$PROTO" ] && >&2 echo -e "${ERROR}ERROR: Must have protocol in registry url${RESET}" && usage
 
 # remove the protocol
-REG="$(echo ${1/$PROTO/})"
-shift
+REG=${FULL_REG/$PROTO/}
+
 ACTION="$1"
 shift
 
@@ -74,7 +98,7 @@ elif [[ -f "$DOCKER_CONFIG" ]]; then
     if [ "$AUTH_INFO" = "null" ]; then
         AUTH_INFO=$(jq -r '.auths."'$PROTO$REG'".auth' < "$DOCKER_CONFIG")
         if [ "$AUTH_INFO" = "null" ]; then
-            echo "ERROR: Failed to retrieve credentials from $DOCKER_CONFIG for ${REG}!"
+            echo -e "${ERROR}ERROR: Failed to retrieve credentials from $DOCKER_CONFIG for ${REG}!${RESET}"
             exit 4
         fi
     fi
@@ -90,7 +114,6 @@ fi
 function curlCmd {
     curl "$SEC_FLAG" --header "$CREDS" $*
 }
-
 
 
 case "$ACTION" in
