@@ -88,7 +88,7 @@ if [[ ${INSECURE_REGISTRY} ]] && [[ $(isTruthy "$INSECURE_REGISTRY") ]]; then
 fi
 
 function curlCmd {
-    curl "$SEC_FLAG" --header "$CREDS" $*
+    curl $SEC_FLAG --header "$CREDS" $*
 }
 
 
